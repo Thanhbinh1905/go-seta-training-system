@@ -4,10 +4,10 @@ package graph
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 import (
-	sqlc "github.com/Thanhbinh1905/seta-training-system/internal/db/sqlc"
+	"gorm.io/gorm"
 )
 
 type Resolver struct {
-	Queries   *sqlc.Queries
+	DB        *gorm.DB
 	JWTSecret string
 }

@@ -8,7 +8,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
-	sqlc "github.com/Thanhbinh1905/seta-training-system/internal/db/sqlc"
+
+	"github.com/Thanhbinh1905/seta-training-system/internal/db"
 	"github.com/Thanhbinh1905/seta-training-system/internal/graph"
 	"github.com/Thanhbinh1905/seta-training-system/pkg/config"
 	"github.com/Thanhbinh1905/seta-training-system/pkg/logger"
@@ -38,18 +39,20 @@ func main() {
 
 	// Connect to the database
 	dbUrl := cfg.DatabaseURL
+	logger.Log.Info("Connecting to database", zap.String("url", dbUrl))
+
 	if dbUrl == "" {
 		logger.Log.Fatal("DATABASE_URL is not set")
 	}
 
-	conn, err := sqlc.Connect(dbUrl)
+	conn, err := db.Connect(dbUrl)
 	if err != nil {
-		logger.Log.Error("failed to connect to database", zap.Error(err))
+		logger.Log.Fatal("failed to connect to database", zap.Error(err))
 	}
-	defer sqlc.Close()
+	defer db.Close(conn)
 
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		Queries:   conn,
+		DB:        conn,
 		JWTSecret: cfg.JWTSecret,
 	}}))
 

@@ -6,16 +6,15 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/Thanhbinh1905/seta-training-system/internal/graph/model"
+	usermodel "github.com/Thanhbinh1905/seta-training-system/internal/user/model"
 	"github.com/Thanhbinh1905/seta-training-system/pkg/jwt"
 	"github.com/Thanhbinh1905/seta-training-system/pkg/logger"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
-
-	sqlc "github.com/Thanhbinh1905/seta-training-system/internal/db/sqlc"
 )
 
 // CreateUser is the resolver for the createUser field.
@@ -26,39 +25,47 @@ func (r *mutationResolver) CreateUser(ctx context.Context, username string, emai
 		return nil, err
 	}
 
-	dbUser, err := r.Queries.CreateUser(ctx, sqlc.CreateUserParams{
+	newUser := &usermodel.User{
+		UserID:       uuid.New().String(),
 		Username:     username,
 		Email:        email,
-		Role:         string(role),
 		PasswordHash: string(hashed),
-	})
-	if err != nil {
-		logger.Log.Error("failed to create user", zap.Error(err), zap.String("username", username), zap.String("email", email), zap.String("role", string(role)))
+		Role:         usermodel.Role(role),
+		CreatedAt:    time.Now(),
+	}
+	if err := r.DB.Create(newUser).Error; err != nil {
+		logger.Log.Error("failed to create user", zap.Error(err), zap.String("email", email))
 		return nil, err
 	}
 
 	return &model.User{
-		UserID:    dbUser.UserID.String(),
-		Username:  dbUser.Username,
-		Email:     dbUser.Email,
-		Role:      model.Role(dbUser.Role),
-		CreatedAt: dbUser.CreatedAt.Time.Format(time.RFC3339),
+		UserID:    newUser.UserID,
+		Username:  newUser.Username,
+		Email:     newUser.Email,
+		Role:      model.Role(newUser.Role),
+		CreatedAt: newUser.CreatedAt.Format(time.RFC3339),
 	}, nil
 }
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, email string, password string) (*model.AuthPayload, error) {
-	user, err := r.Queries.GetUserByEmail(ctx, email)
-	if err != nil {
-		logger.Log.Error("failed to get user by email", zap.Error(err), zap.String("email", email))
-		return nil, fmt.Errorf("invalid email or password")
+	var user usermodel.User
+
+	if err := r.DB.Where("email = ?", email).First(&user).Error; err != nil {
+		logger.Log.Error("failed to find user", zap.Error(err), zap.String("email", email))
+		return nil, err
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		logger.Log.Error("password mismatch", zap.Error(err), zap.String("email", email))
-		return nil, fmt.Errorf("invalid credentials")
+		return nil, err
 	}
-	token, err := jwt.GenerateJWT(user.UserID.String(), r.JWTSecret, user.Role)
+
+	token, err := jwt.GenerateJWT(user.UserID, r.JWTSecret, string(user.Role)) // Token valid for 7 days
+	if err != nil {
+		logger.Log.Error("token generation failed", zap.Error(err))
+		return nil, err
+	}
 
 	return &model.AuthPayload{
 		Token: token,
@@ -72,8 +79,8 @@ func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
 
 // FetchUsers is the resolver for the fetchUsers field.
 func (r *queryResolver) FetchUsers(ctx context.Context) ([]*model.User, error) {
-	users, err := r.Queries.ListUsers(ctx)
-	if err != nil {
+	var users []usermodel.User
+	if err := r.DB.Find(&users).Error; err != nil {
 		logger.Log.Error("failed to fetch users", zap.Error(err))
 		return nil, err
 	}
@@ -81,13 +88,14 @@ func (r *queryResolver) FetchUsers(ctx context.Context) ([]*model.User, error) {
 	var result []*model.User
 	for _, user := range users {
 		result = append(result, &model.User{
-			UserID:    user.UserID.String(),
+			UserID:    user.UserID,
 			Username:  user.Username,
 			Email:     user.Email,
 			Role:      model.Role(user.Role),
-			CreatedAt: user.CreatedAt.Time.Format(time.RFC3339),
+			CreatedAt: user.CreatedAt.Format(time.RFC3339),
 		})
 	}
+
 	return result, nil
 }
 

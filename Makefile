@@ -1,6 +1,3 @@
-include .env
-export
-
 initdb:
 	docker run --name seta-training -e POSTGRES_PASSWORD=secret -e POSTGRES_USER=root -p 5432:5432 -d postgres:13.21-alpine3.21
 
@@ -10,16 +7,22 @@ createdb:
 dropdb:
 	docker exec -it seta-training dropdb --username=root --if-exists training-system
 
-migrateup:
-	migrate -path internal/db/migrations -database ${DATABASE_URL} -verbose up
-
-migratedown:
-	migrate -path internal/db/migrations -database ${DATABASE_URL} -verbose down
-
-sqlc:
-	sqlc generate
+gensql:
+	go run ./cmd/gen-sql
 
 gqlgen:
 	gqlgen generate
 
-.PHONY: initdb createdb dropdb migrateup migratedown sqlc gqlgen
+migratediff:
+	atlas migrate diff --env gorm "init_schema"
+
+migrateup:
+	atlas migrate apply --env gorm
+
+migratedown:
+	atlas migrate apply --env gorm --to "last(-1)"
+
+server:
+	go run ./cmd/server.go
+
+.PHONY: initdb createdb dropdb migrateup migratedown sqlc gqlgen gensql migratediff server
