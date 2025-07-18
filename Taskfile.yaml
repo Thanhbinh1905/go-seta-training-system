@@ -1,0 +1,42 @@
+version: '3'
+
+dotenv: ['.env']
+
+tasks:
+  initdb:
+    desc: "Run PostgreSQL container with env vars"
+    cmds:
+      - docker run --name seta-training \
+          -e POSTGRES_PASSWORD={{.POSTGRES_PASSWORD}} \
+          -e POSTGRES_USER={{.POSTGRES_USER}} \
+          -p {{.POSTGRES_PORT}}:5432 \
+          -d postgres:13.21-alpine3.21
+
+  createdb:
+    cmds:
+      - docker exec -it seta-training createdb --username={{.POSTGRES_USER}} --owner={{.POSTGRES_USER}} {{.POSTGRES_DB}}
+
+  dropdb:
+    cmds:
+      - docker exec -it seta-training dropdb --username=root --if-exists training-system
+
+  gensql:
+    cmds:
+      - go run ./cmd/gen-sql
+
+  sqlc:
+    cmds:
+      - sqlc generate
+
+  gqlgen:
+    cmds:
+      - gqlgen generate
+
+  migratediff:
+    cmds:
+      - atlas migrate diff --env gorm "init_schema"
+
+  migrateup:
+    cmds:
+      - atlas migrate apply --env gorm
+
