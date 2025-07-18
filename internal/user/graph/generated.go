@@ -14,7 +14,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/Thanhbinh1905/seta-training-system/internal/graph/model"
+	"github.com/Thanhbinh1905/seta-training-system/internal/user/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -371,7 +371,7 @@ func (ec *executionContext) field_Mutation_createUser_argsRole(
 ) (model.Role, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
 	if tmp, ok := rawArgs["role"]; ok {
-		return ec.unmarshalNRole2githubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋgraphᚋmodelᚐRole(ctx, tmp)
+		return ec.unmarshalNRole2githubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋuserᚋgraphᚋmodelᚐRole(ctx, tmp)
 	}
 
 	var zeroVal model.Role
@@ -614,7 +614,7 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋuserᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -681,7 +681,7 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*model.AuthPayload)
 	fc.Result = res
-	return ec.marshalNAuthPayload2ᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋgraphᚋmodelᚐAuthPayload(ctx, field.Selections, res)
+	return ec.marshalNAuthPayload2ᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋuserᚋgraphᚋmodelᚐAuthPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -784,7 +784,7 @@ func (ec *executionContext) _Query_fetchUsers(ctx context.Context, field graphql
 	}
 	res := resTmp.([]*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋuserᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_fetchUsers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1103,7 +1103,7 @@ func (ec *executionContext) _User_role(ctx context.Context, field graphql.Collec
 	}
 	res := resTmp.(model.Role)
 	fc.Result = res
-	return ec.marshalNRole2githubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋgraphᚋmodelᚐRole(ctx, field.Selections, res)
+	return ec.marshalNRole2githubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋuserᚋgraphᚋmodelᚐRole(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3690,11 +3690,11 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAuthPayload2githubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋgraphᚋmodelᚐAuthPayload(ctx context.Context, sel ast.SelectionSet, v model.AuthPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNAuthPayload2githubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋuserᚋgraphᚋmodelᚐAuthPayload(ctx context.Context, sel ast.SelectionSet, v model.AuthPayload) graphql.Marshaler {
 	return ec._AuthPayload(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAuthPayload2ᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋgraphᚋmodelᚐAuthPayload(ctx context.Context, sel ast.SelectionSet, v *model.AuthPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNAuthPayload2ᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋuserᚋgraphᚋmodelᚐAuthPayload(ctx context.Context, sel ast.SelectionSet, v *model.AuthPayload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -3736,13 +3736,13 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNRole2githubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋgraphᚋmodelᚐRole(ctx context.Context, v any) (model.Role, error) {
+func (ec *executionContext) unmarshalNRole2githubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋuserᚋgraphᚋmodelᚐRole(ctx context.Context, v any) (model.Role, error) {
 	var res model.Role
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNRole2githubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋgraphᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v model.Role) graphql.Marshaler {
+func (ec *executionContext) marshalNRole2githubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋuserᚋgraphᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v model.Role) graphql.Marshaler {
 	return v
 }
 
@@ -3762,11 +3762,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2githubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋuserᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋuserᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3790,7 +3790,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋThanhbinh1905ᚋse
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋuserᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3810,7 +3810,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋThanhbinh1905ᚋse
 	return ret
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋThanhbinh1905ᚋsetaᚑtrainingᚑsystemᚋinternalᚋuserᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

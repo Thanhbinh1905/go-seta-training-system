@@ -3,8 +3,13 @@ version: '3'
 dotenv: ['.env']
 
 tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
   initdb:
-    desc: "Run PostgreSQL container with env vars"
+    desc: Run PostgreSQL container with env vars
     cmds:
       - docker run --name seta-training \
           -e POSTGRES_PASSWORD={{.POSTGRES_PASSWORD}} \
@@ -13,30 +18,91 @@ tasks:
           -d postgres:13.21-alpine3.21
 
   createdb:
+    desc: Create a new PostgreSQL database inside the running container
     cmds:
       - docker exec -it seta-training createdb --username={{.POSTGRES_USER}} --owner={{.POSTGRES_USER}} {{.POSTGRES_DB}}
 
   dropdb:
+    desc: Drop the PostgreSQL database if it exists
     cmds:
-      - docker exec -it seta-training dropdb --username=root --if-exists training-system
+      - docker exec -it seta-training dropdb --username={{.POSTGRES_USER}} --if-exists {{.POSTGRES_DB}}
 
   gensql:
+    desc: Generate SQL migration files using Go script
     cmds:
       - go run ./cmd/gen-sql
 
   sqlc:
+    desc: Generate Go code from SQL using sqlc
     cmds:
       - sqlc generate
 
   gqlgen:
+    desc: Generate GraphQL code using gqlgen
     cmds:
       - gqlgen generate
 
   migratediff:
+    desc: Create a new migration diff using Atlas
     cmds:
       - atlas migrate diff --env gorm "init_schema"
 
   migrateup:
+    desc: Apply all migrations using Atlas
     cmds:
       - atlas migrate apply --env gorm
+
+  migratedown:
+    desc: Rollback to base migration using Atlas
+    cmds:
+      - atlas migrate apply --env gorm --to "base"
+
+  resetdb:
+    desc: Reset the database by dropping and creating it
+    cmds:
+      - task dropdb
+      - task createdb
+      - task migrateup
+
+  server:
+    desc: Start the GraphQL server
+    cmds:
+      - go run ./cmd/server
+
+  seedusers:
+    desc: Seed 2 test users
+    cmds:
+      - |
+        curl -X POST http://localhost:8080/query \
+          -H "Content-Type: application/json" \
+          -d '{"query":"mutation { createUser(username: \"member1\", email: \"member1@gmail.com\", role: member, password: \"member1\") { userId } }"}'
+      - |
+        curl -X POST http://localhost:8080/query \
+          -H "Content-Type: application/json" \
+          -d '{"query":"mutation { createUser(username: \"manager1\", email: \"manager1@gmail.com\", role: manager, password: \"manager1\") { userId } }"}'
+
+  gentoken:
+    desc: Generate tokens and save to token.json
+    cmds:
+      - echo "Lấy token cho member1..."
+      - |
+        curl -s -X POST http://localhost:8080/query \
+          -H "Content-Type: application/json" \
+          -d '{"query":"mutation { login(email: \"member1@gmail.com\", password: \"member1\") { token } }"}' \
+          > member_response.json
+      - echo "member1 response:" && cat member_response.json
+
+      - echo "Lấy token cho manager1..."
+      - |
+        curl -s -X POST http://localhost:8080/query \
+          -H "Content-Type: application/json" \
+          -d '{"query":"mutation { login(email: \"manager1@gmail.com\", password: \"manager1\") { token } }"}' \
+          > manager_response.json
+      - echo "manager1 response:" && cat manager_response.json
+
+      - |
+        TOKEN_MEMBER=$(cat member_response.json | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+        TOKEN_MANAGER=$(cat manager_response.json | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+        echo -e "{\n  \"member\": \"${TOKEN_MEMBER}\",\n  \"manager\": \"${TOKEN_MANAGER}\"\n}" > token.json
+        rm -f member_response.json manager_response.json
 

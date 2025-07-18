@@ -9,10 +9,11 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 
-	"github.com/Thanhbinh1905/seta-training-system/internal/graph"
+	"github.com/Thanhbinh1905/seta-training-system/internal/user/graph"
 	"github.com/Thanhbinh1905/seta-training-system/pkg/config"
 	"github.com/Thanhbinh1905/seta-training-system/pkg/db"
 	"github.com/Thanhbinh1905/seta-training-system/pkg/logger"
+	"github.com/Thanhbinh1905/seta-training-system/pkg/middleware"
 
 	"github.com/vektah/gqlparser/v2/ast"
 	"go.uber.org/zap"
@@ -68,6 +69,8 @@ func main() {
 	})
 
 	r := gin.Default()
+	r.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+	r.Use(middleware.ContextMiddleware())
 
 	// Health check
 	r.GET("/healthz", func(c *gin.Context) {

@@ -1,15 +1,25 @@
 package db
 
 import (
+	"log"
+	"os"
+
 	"github.com/Thanhbinh1905/seta-training-system/pkg/logger"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	gormlogger "gorm.io/gorm/logger"
 )
 
 func Connect(dbURL string) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{
-		// Logger: logger.Log, // Uncomment if you want to use custom logger
+		Logger: gormlogger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			gormlogger.Config{
+				LogLevel: gormlogger.Silent, // ❗ hoặc logger.Silent nếu muốn tắt hoàn toàn
+			},
+		),
 	})
 	if err != nil {
 		logger.Log.Error("failed to connect to database", zap.Error(err))
