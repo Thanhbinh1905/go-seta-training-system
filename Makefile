@@ -23,6 +23,6 @@ migratedown:
 	atlas migrate apply --env gorm --to "last(-1)"
 
 server:
-	go run ./cmd/server.go
+	go run ./cmd/server/server.go
 
 .PHONY: initdb createdb dropdb migrateup migratedown sqlc gqlgen gensql migratediff server

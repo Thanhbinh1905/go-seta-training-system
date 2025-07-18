@@ -8,7 +8,7 @@ data "external_schema" "gorm" {
 }
 
 env "gorm" {
-    url = getenv("DATABASE_URL")
+    url = "postgres://root:secret@localhost:5432/training-system?sslmode=disable"
     src = data.external_schema.gorm.url
     dev = "docker://postgres/15/dev"
     migration {
