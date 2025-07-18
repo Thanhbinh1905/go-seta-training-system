@@ -81,11 +81,11 @@ func main() {
 
 	// GraphQL Playground
 	r.GET("/", func(c *gin.Context) {
-		playground.Handler("GraphQL Playground", "/query").ServeHTTP(c.Writer, c.Request)
+		playground.Handler("GraphQL Playground", "/graphQL").ServeHTTP(c.Writer, c.Request)
 	})
 
 	// GraphQL Query Handler
-	r.POST("/query", func(c *gin.Context) {
+	r.POST("/graphQL", func(c *gin.Context) {
 		srv.ServeHTTP(c.Writer, c.Request)
 	})
 
