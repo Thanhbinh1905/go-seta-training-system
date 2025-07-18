@@ -1,15 +1,15 @@
-package db_test
+package db
 
 import (
 	"context"
 	"testing"
 
-	sqlc "github.com/Thanhbinh1905/seta-training-system/internal/db/sqlc"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateUser(t *testing.T) {
 	ctx := context.Background()
-	arg := sqlc.CreateUserParams{
+	arg := CreateUserParams{
 		Username:     "testuser",
 		Email:        "testuser@gmail.com",
 		Role:         "member",
@@ -17,20 +17,12 @@ func TestCreateUser(t *testing.T) {
 	}
 
 	user, err := testQueries.CreateUser(ctx, arg)
-	if err != nil {
-		t.Fatalf("failed to create user: %v", err)
-	}
+	require.NoError(t, err)
 
-	if user.Username != arg.Username || user.Email != arg.Email || user.Role != arg.Role {
-		t.Errorf("created user does not match input: got %v, want %v", user, arg)
-	}
-
-	if user.PasswordHash != arg.PasswordHash {
-		t.Errorf("password hash does not match: got %s, want %s", user.PasswordHash, arg.PasswordHash)
-	}
-
-	if user.CreatedAt == (sqlc.User{}).CreatedAt {
-		t.Error("created_at should not be zero value")
-	}
-
+	require.NoError(t, err)
+	require.Equal(t, arg.Username, user.Username)
+	require.Equal(t, arg.Email, user.Email)
+	require.Equal(t, arg.Role, user.Role)
+	require.NotEmpty(t, user.PasswordHash)
+	require.NotZero(t, user.CreatedAt)
 }

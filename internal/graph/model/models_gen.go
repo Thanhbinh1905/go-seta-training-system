@@ -21,17 +21,18 @@ type Query struct {
 }
 
 type User struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Role     Role   `json:"role"`
+	UserID    string `json:"userId"`
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	Role      Role   `json:"role"`
+	CreatedAt string `json:"createdAt"`
 }
 
 type Role string
 
 const (
-	RoleManager Role = "MANAGER"
-	RoleMember  Role = "MEMBER"
+	RoleManager Role = "manager"
+	RoleMember  Role = "member"
 )
 
 var AllRole = []Role{

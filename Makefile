@@ -19,4 +19,7 @@ migratedown:
 sqlc:
 	sqlc generate
 
-.PHONY: initdb createdb dropdb migrateup migratedown sqlc
+gqlgen:
+	gqlgen generate
+
+.PHONY: initdb createdb dropdb migrateup migratedown sqlc gqlgen

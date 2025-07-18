@@ -7,13 +7,42 @@ package graph
 import (
 	"context"
 	"fmt"
+	"time"
+
+	sqlc "github.com/Thanhbinh1905/seta-training-system/internal/db/sqlc"
 
 	"github.com/Thanhbinh1905/seta-training-system/internal/graph/model"
+	"github.com/Thanhbinh1905/seta-training-system/pkg/logger"
+	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 )
 
-// Register is the resolver for the register field.
-func (r *mutationResolver) Register(ctx context.Context, username string, email string, password string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: Register - register"))
+// CreateUser is the resolver for the createUser field.
+func (r *mutationResolver) CreateUser(ctx context.Context, username string, email string, password string, role model.Role) (*model.User, error) {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		logger.Log.Error("failed to hash password", zap.Error(err))
+		return nil, err
+	}
+
+	dbUser, err := r.Queries.CreateUser(ctx, sqlc.CreateUserParams{
+		Username:     username,
+		Email:        email,
+		Role:         string(role),
+		PasswordHash: string(hashed),
+	})
+	if err != nil {
+		logger.Log.Error("failed to create user", zap.Error(err), zap.String("username", username), zap.String("email", email), zap.String("role", string(role)))
+		return nil, err
+	}
+
+	return &model.User{
+		UserID:    dbUser.UserID.String(),
+		Username:  dbUser.Username,
+		Email:     dbUser.Email,
+		Role:      model.Role(dbUser.Role),
+		CreatedAt: dbUser.CreatedAt.Time.Format(time.RFC3339),
+	}, nil
 }
 
 // Login is the resolver for the login field.
@@ -26,19 +55,9 @@ func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
 	panic(fmt.Errorf("not implemented: Logout - logout"))
 }
 
-// AssignRole is the resolver for the assignRole field.
-func (r *mutationResolver) AssignRole(ctx context.Context, userID string, role model.Role) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: AssignRole - assignRole"))
-}
-
-// Users is the resolver for the users field.
-func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented: Users - users"))
-}
-
-// Me is the resolver for the me field.
-func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: Me - me"))
+// FetchUsers is the resolver for the fetchUsers field.
+func (r *queryResolver) FetchUsers(ctx context.Context) ([]*model.User, error) {
+	panic(fmt.Errorf("not implemented: FetchUsers - fetchUsers"))
 }
 
 // Mutation returns MutationResolver implementation.
@@ -49,18 +68,3 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
-}
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
-}
-*/

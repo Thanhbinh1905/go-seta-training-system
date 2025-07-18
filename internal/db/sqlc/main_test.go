@@ -1,25 +1,25 @@
-package db_test
+package db
 
 import (
 	"context"
-	"log"
 	"os"
 	"testing"
 
-	sqlc "github.com/Thanhbinh1905/seta-training-system/internal/db/sqlc" // ⚠️ Replace `your-module` bằng tên module trong go.mod
+	"github.com/Thanhbinh1905/seta-training-system/pkg/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/zap"
 )
 
 const dbSource = "postgresql://root:secret@localhost:5432/training-system?sslmode=disable"
 
-var testQueries *sqlc.Queries
+var testQueries *Queries
 
 func TestMain(m *testing.M) {
 	ctx := context.Background()
 	pool, err := pgxpool.New(ctx, dbSource)
 	if err != nil {
-		log.Fatalf("cannot connect to db: %v", err)
+		logger.Log.Fatal("failed to connect to database", zap.Error(err))
 	}
-	testQueries = sqlc.New(pool)
+	testQueries = New(pool)
 	os.Exit(m.Run())
 }

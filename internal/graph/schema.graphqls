@@ -1,13 +1,14 @@
 enum Role {
-  MANAGER
-  MEMBER
+  manager
+  member
 }
 
 type User {
-  id: ID!
+  userId: ID!
   username: String!
   email: String!
   role: Role!
+  createdAt: String!
 }
 
 type AuthPayload {
@@ -16,13 +17,11 @@ type AuthPayload {
 }
 
 type Query {
-  users: [User!]!
-  me: User!
+  fetchUsers: [User!]!
 }
 
 type Mutation {
-  register(username: String!, email: String!, password: String!): User!
+  createUser(username: String!, email: String!, password: String!, role: Role!): User!
   login(email: String!, password: String!): AuthPayload!
   logout: Boolean!
-  assignRole(userId: ID!, role: Role!): User!
 }
