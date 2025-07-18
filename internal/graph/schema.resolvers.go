@@ -9,12 +9,13 @@ import (
 	"fmt"
 	"time"
 
-	sqlc "github.com/Thanhbinh1905/seta-training-system/internal/db/sqlc"
-
 	"github.com/Thanhbinh1905/seta-training-system/internal/graph/model"
+	"github.com/Thanhbinh1905/seta-training-system/pkg/jwt"
 	"github.com/Thanhbinh1905/seta-training-system/pkg/logger"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
+
+	sqlc "github.com/Thanhbinh1905/seta-training-system/internal/db/sqlc"
 )
 
 // CreateUser is the resolver for the createUser field.
@@ -47,17 +48,47 @@ func (r *mutationResolver) CreateUser(ctx context.Context, username string, emai
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, email string, password string) (*model.AuthPayload, error) {
-	panic(fmt.Errorf("not implemented: Login - login"))
+	user, err := r.Queries.GetUserByEmail(ctx, email)
+	if err != nil {
+		logger.Log.Error("failed to get user by email", zap.Error(err), zap.String("email", email))
+		return nil, fmt.Errorf("invalid email or password")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+		logger.Log.Error("password mismatch", zap.Error(err), zap.String("email", email))
+		return nil, fmt.Errorf("invalid credentials")
+	}
+	token, err := jwt.GenerateJWT(user.UserID.String(), r.JWTSecret, user.Role)
+
+	return &model.AuthPayload{
+		Token: token,
+	}, nil
 }
 
 // Logout is the resolver for the logout field.
 func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
-	panic(fmt.Errorf("not implemented: Logout - logout"))
+	return true, nil
 }
 
 // FetchUsers is the resolver for the fetchUsers field.
 func (r *queryResolver) FetchUsers(ctx context.Context) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented: FetchUsers - fetchUsers"))
+	users, err := r.Queries.ListUsers(ctx)
+	if err != nil {
+		logger.Log.Error("failed to fetch users", zap.Error(err))
+		return nil, err
+	}
+
+	var result []*model.User
+	for _, user := range users {
+		result = append(result, &model.User{
+			UserID:    user.UserID.String(),
+			Username:  user.Username,
+			Email:     user.Email,
+			Role:      model.Role(user.Role),
+			CreatedAt: user.CreatedAt.Time.Format(time.RFC3339),
+		})
+	}
+	return result, nil
 }
 
 // Mutation returns MutationResolver implementation.

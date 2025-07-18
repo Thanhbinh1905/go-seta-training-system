@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
@@ -11,20 +10,26 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	sqlc "github.com/Thanhbinh1905/seta-training-system/internal/db/sqlc"
 	"github.com/Thanhbinh1905/seta-training-system/internal/graph"
+	"github.com/Thanhbinh1905/seta-training-system/pkg/config"
 	"github.com/Thanhbinh1905/seta-training-system/pkg/logger"
-	"github.com/joho/godotenv"
+
 	"github.com/vektah/gqlparser/v2/ast"
 	"go.uber.org/zap"
+
+	"github.com/gin-gonic/gin"
 )
 
 const defaultPort = "8080"
 
 func main() {
-	godotenv.Load()
-
 	logger.InitLogger(true)
 
-	port := os.Getenv("PORT")
+	cfg := config.LoadConfig()
+	if cfg == nil {
+		logger.Log.Fatal("failed to load configuration")
+	}
+
+	port := cfg.Port
 	if port == "" {
 		port = defaultPort
 	}
@@ -32,19 +37,20 @@ func main() {
 	logger.Log.Info("Starting server on port", zap.String("port", port))
 
 	// Connect to the database
-	dbUrl := os.Getenv("DATABASE_URL")
+	dbUrl := cfg.DatabaseURL
 	if dbUrl == "" {
 		logger.Log.Fatal("DATABASE_URL is not set")
 	}
 
-	conn, err := sqlc.Connect(os.Getenv("DATABASE_URL"))
+	conn, err := sqlc.Connect(dbUrl)
 	if err != nil {
 		logger.Log.Error("failed to connect to database", zap.Error(err))
 	}
 	defer sqlc.Close()
 
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		Queries: conn,
+		Queries:   conn,
+		JWTSecret: cfg.JWTSecret,
 	}}))
 
 	srv.AddTransport(transport.Options{})
@@ -58,19 +64,27 @@ func main() {
 		Cache: lru.New[string](100),
 	})
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
-	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ok"}`))
+	r := gin.Default()
+
+	// Health check
+	r.GET("/healthz", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+		})
+	})
+
+	// GraphQL Playground
+	r.GET("/", func(c *gin.Context) {
+		playground.Handler("GraphQL Playground", "/query").ServeHTTP(c.Writer, c.Request)
+	})
+
+	// GraphQL Query Handler
+	r.POST("/query", func(c *gin.Context) {
+		srv.ServeHTTP(c.Writer, c.Request)
 	})
 
 	logger.Log.Info("Starting server on port " + port)
-	logger.Log.Info("Server started successfully", zap.String("port", port))
-
-	// 🧠 Đây là chỗ thiếu nè
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := r.Run(":" + port); err != nil {
 		logger.Log.Fatal("failed to start server", zap.Error(err))
 	}
 }

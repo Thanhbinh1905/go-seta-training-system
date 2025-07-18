@@ -8,11 +8,6 @@ import (
 )
 
 type Resolver struct {
-	Queries *sqlc.Queries
-}
-
-func NewResolver(queries *sqlc.Queries) *Resolver {
-	return &Resolver{
-		Queries: queries,
-	}
+	Queries   *sqlc.Queries
+	JWTSecret string
 }
