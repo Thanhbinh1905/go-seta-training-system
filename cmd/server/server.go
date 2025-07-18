@@ -9,9 +9,9 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 
-	"github.com/Thanhbinh1905/seta-training-system/internal/db"
 	"github.com/Thanhbinh1905/seta-training-system/internal/graph"
 	"github.com/Thanhbinh1905/seta-training-system/pkg/config"
+	"github.com/Thanhbinh1905/seta-training-system/pkg/db"
 	"github.com/Thanhbinh1905/seta-training-system/pkg/logger"
 
 	"github.com/vektah/gqlparser/v2/ast"
