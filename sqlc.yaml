@@ -1,0 +1,20 @@
+version: "2"
+sql:
+  - name: "db"                     # tên nhóm cấu hình
+    engine: "postgresql"             # DB engine
+    schema:
+      - "internal/db/migrations/"     # định nghĩa bảng
+    queries:
+      - "internal/db/query/"      # chứa SQLs :one, :many...
+    gen:
+      go:
+        package: "db"                # package trong Go
+        out: "internal/db/sqlc"           # thư mục tạo code SQLC
+        sql_package: "pgx/v5"        # dùng pgx driver
+        emit_json_tags: true         # trường struct có tag `json:"..."`
+        emit_interface: false         # sinh interface Querier để mock/testing
+        emit_result_struct_pointers: false
+        emit_params_struct_pointers: false
+        emit_exact_table_names: false # dùng tên bảng chính xác
+    database:
+      uri: "${DATABASE_URL}"         # connect URL từ env var

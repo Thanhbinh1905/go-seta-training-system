@@ -1,0 +1,28 @@
+enum Role {
+  MANAGER
+  MEMBER
+}
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  role: Role!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+type Query {
+  users: [User!]!
+  me: User!
+}
+
+type Mutation {
+  register(username: String!, email: String!, password: String!): User!
+  login(email: String!, password: String!): AuthPayload!
+  logout: Boolean!
+  assignRole(userId: ID!, role: Role!): User!
+}
