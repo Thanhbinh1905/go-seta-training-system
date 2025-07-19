@@ -76,7 +76,7 @@ func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
 }
 
 func (r *queryResolver) FetchUsers(ctx context.Context) ([]*model.User, error) {
-	userID, ok := ctx.Value("userID").(string)
+	userID, ok := ctx.Value("user_id").(string)
 	if !ok || userID == "" {
 		return nil, apperror.Unauthorized("unauthorized access")
 	}

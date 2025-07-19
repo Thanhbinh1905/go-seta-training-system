@@ -15,6 +15,10 @@ import (
 	"github.com/Thanhbinh1905/seta-training-system/pkg/logger"
 	"github.com/Thanhbinh1905/seta-training-system/pkg/middleware"
 
+	teamHandler "github.com/Thanhbinh1905/seta-training-system/internal/team/handler"
+	teamRepository "github.com/Thanhbinh1905/seta-training-system/internal/team/repository"
+	teamService "github.com/Thanhbinh1905/seta-training-system/internal/team/service"
+
 	"github.com/vektah/gqlparser/v2/ast"
 	"go.uber.org/zap"
 
@@ -69,8 +73,6 @@ func main() {
 	})
 
 	r := gin.Default()
-	r.Use(middleware.AuthMiddleware(cfg.JWTSecret))
-	r.Use(middleware.ContextMiddleware())
 
 	// Health check
 	r.GET("/healthz", func(c *gin.Context) {
@@ -84,10 +86,32 @@ func main() {
 		playground.Handler("GraphQL Playground", "/graphQL").ServeHTTP(c.Writer, c.Request)
 	})
 
+	r.Use(middleware.OptionalAuthMiddleware(cfg.JWTSecret))
+	r.Use(middleware.ContextMiddleware())
+
 	// GraphQL Query Handler
 	r.POST("/graphQL", func(c *gin.Context) {
 		srv.ServeHTTP(c.Writer, c.Request)
 	})
+
+	// Protected routes group: yêu cầu auth
+	authGroup := r.Group("/")
+	authGroup.Use(middleware.RequiredAuthMiddleware(cfg.JWTSecret))
+
+	teamRepo := teamRepository.NewRepository(conn)
+	teamSvc := teamService.NewTeamService(teamRepo)
+	teamHdl := teamHandler.NewTeamHandler(teamSvc)
+
+	// Routes cho team management chỉ dành cho manager
+	teamGroup := authGroup.Group("/teams")
+	teamGroup.Use(middleware.RequireManagerRole("manager"))
+	{
+		teamGroup.POST("/", teamHdl.CreateTeam)
+		teamGroup.POST("/:teamId/members", teamHdl.AddMember)
+		teamGroup.DELETE("/:teamId/members/:memberId", teamHdl.RemoveMember)
+		teamGroup.POST("/:teamId/managers", teamHdl.AddManager)
+		teamGroup.DELETE("/:teamId/managers/:managerId", teamHdl.RemoveManager)
+	}
 
 	logger.Log.Info("Starting server on port " + port)
 	if err := r.Run(":" + port); err != nil {

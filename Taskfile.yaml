@@ -73,11 +73,11 @@ tasks:
     desc: Seed 2 test users
     cmds:
       - |
-        curl -X POST http://localhost:8080/query \
+        curl -X POST http://localhost:8080/graphQL \
           -H "Content-Type: application/json" \
           -d '{"query":"mutation { createUser(username: \"member1\", email: \"member1@gmail.com\", role: member, password: \"member1\") { userId } }"}'
       - |
-        curl -X POST http://localhost:8080/query \
+        curl -X POST http://localhost:8080/graphQL \
           -H "Content-Type: application/json" \
           -d '{"query":"mutation { createUser(username: \"manager1\", email: \"manager1@gmail.com\", role: manager, password: \"manager1\") { userId } }"}'
 
@@ -86,7 +86,7 @@ tasks:
     cmds:
       - echo "Lấy token cho member1..."
       - |
-        curl -s -X POST http://localhost:8080/query \
+        curl -s -X POST http://localhost:8080/graphQL \
           -H "Content-Type: application/json" \
           -d '{"query":"mutation { login(email: \"member1@gmail.com\", password: \"member1\") { token } }"}' \
           > member_response.json
@@ -94,7 +94,7 @@ tasks:
 
       - echo "Lấy token cho manager1..."
       - |
-        curl -s -X POST http://localhost:8080/query \
+        curl -s -X POST http://localhost:8080/graphQL \
           -H "Content-Type: application/json" \
           -d '{"query":"mutation { login(email: \"manager1@gmail.com\", password: \"manager1\") { token } }"}' \
           > manager_response.json
